@@ -1,0 +1,71 @@
+from google.cloud import speech_v1p1beta1 as speech
+from google.cloud import translate_v2 as translate
+from transformers import BartForConditionalGeneration, BartTokenizer
+import spacy
+from spacy.matcher import Matcher
+
+# 1. Audio Conversation to Transcript
+def transcribe_audio(audio_path):
+    client = speech.SpeechClient()
+    with open(audio_path, 'rb') as audio_file:
+        content = audio_file.read()
+    audio = speech.RecognitionAudio(content=content)
+    config = speech.RecognitionConfig(
+        encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
+        sample_rate_hertz=16000,
+        language_code="en-US",
+    )
+    response = client.recognize(config=config, audio=audio)
+    transcript = ""
+    for result in response.results:
+        transcript += result.alternatives[0].transcript
+    return transcript
+
+# 2. Summarize the Transcript
+def summarize_text(text):
+    model_name = "facebook/bart-large-cnn"
+    model = BartForConditionalGeneration.from_pretrained(model_name)
+    tokenizer = BartTokenizer.from_pretrained(model_name)
+    inputs = tokenizer([text], max_length=1024, return_tensors="pt", truncation=True)
+    summary_ids = model.generate(inputs["input_ids"], num_beams=4, min_length=30, max_length=500, early_stopping=True)
+    summary = tokenizer.decode(summary_ids[0], skip_special_tokens=True)
+    return summary
+
+# 3. Extract Reminders or Appointments
+def extract_appointments(text):
+    nlp = spacy.load("en_core_web_sm")
+    doc = nlp(text)
+    matcher = Matcher(nlp.vocab)
+    pattern = [{"LOWER": "reminder"}, {"POS": "ADP", "OP": "?"}, {"POS": "NOUN", "OP": "?"}, {"POS": "NUM", "OP": "?"}, {"ENT_TYPE": "DATE", "OP": "+"}]
+    matcher.add("APPOINTMENT_PATTERN", [pattern])
+    matches = matcher(doc)
+    reminders = [doc[start:end].text for match_id, start, end in matches]
+    return reminders
+
+# 4. Multilingual Audio to English Transcript
+def transcribe_and_translate(audio_path):
+    # Transcribe the audio
+    transcript = transcribe_audio(audio_path)
+    
+    # Translate the transcript to English
+    translate_client = translate.Client()
+    result = translate_client.translate(transcript, target_language="en")
+    return result["translatedText"]
+
+# Main function to demonstrate the functionalities
+def main():
+    audio_path = "/Users/kevin/Documents/Pluto-Hacks-2023/Test.wav"
+    transcript = transcribe_audio(audio_path)
+    print("Transcript:", transcript)
+    
+    summary = summarize_text(transcript)
+    print("Summary:", summary)
+    
+    reminders = extract_appointments(transcript)
+    print("Reminders:", reminders)
+    
+    translated_text = transcribe_and_translate(audio_path)
+    print("Translated Transcript:", translated_text)
+
+if __name__ == "__main__":
+    main()

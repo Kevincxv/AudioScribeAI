@@ -1,0 +1,22 @@
+.navbar {
+    display: flex;
+    justify-content: space-around;
+    padding: 10px 0;
+    background-color: #6AFF00;
+    width: 100%;
+    margin: 0 auto;
+  }
+  
+  .nav-item {
+    padding: 10px 20px;
+    text-decoration: none;
+    color: #9500FF;
+
+    transition: box-shadow 0.3 ,background-color 0.3s;
+  }
+  
+  .nav-item:hover {
+    background-color: #9500FF;
+    color: #6AFF00;
+    box-shadow: 0 0 15px #9500FF
+  }

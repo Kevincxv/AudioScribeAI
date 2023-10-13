@@ -51,7 +51,7 @@ def extract_appointments(text):
         if ent.label_ == "DATE":
             prev_token = ent.start - 1
             next_token = ent.end
-            if prev_token >= 0 and doc[prev_token].lower_ in ["appointment", "meeting"]:
+            if prev_token >= 0 and doc[prev_token].lower_ in ["appointment", "meeting", "schedule"]:
                 label = "Appointment" if doc[prev_token].lower_ == "appointment" else "Meeting"
                 time_str = ""
                 if next_token < len(doc) and doc[next_token].lower_ == "at":
@@ -63,13 +63,13 @@ def extract_appointments(text):
     return reminders
 
 # 4. Multilingual Audio to English Transcript
-def transcribe_and_translate(audio_path):
+def transcribe_and_translate(audio_path, target_language="en"):
     # Transcribe the audio
     transcript = transcribe_audio(audio_path)
     
-    # Translate the transcript to English
+    # Translate the transcript to the selected language
     translate_client = translate.Client()
-    result = translate_client.translate(transcript, target_language="en")
+    result = translate_client.translate(transcript, target_language=target_language)
     return result["translatedText"]
 
 def start_recording_thread():
@@ -139,7 +139,7 @@ def main():
 
     play_button = tk.Button(root, text="Play Audio", command=play_audio)
     play_button.pack()
-
+    
     transcript_button = tk.Button(root, text="View Transcript", command=display_transcript)
     transcript_button.pack()
 
@@ -148,14 +148,7 @@ def main():
 
     reminders_button = tk.Button(root, text="View Reminders", command=display_reminders)
     reminders_button.pack()
-
-    # Dropdown menu for language selection
-    languages = ["en", "es", "fr", "de", "zh", "ja"]  # Add more languages as needed
-    selected_language = tk.StringVar(root)
-    selected_language.set("en")  # Default language is English
-    language_dropdown = tk.OptionMenu(root, selected_language, *languages)
-    language_dropdown.pack()
-
+    
     translate_button = tk.Button(root, text="Translate Transcript", command=lambda: display_translation(selected_language.get()))
     translate_button.pack()
 

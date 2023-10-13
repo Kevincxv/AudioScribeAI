@@ -1,0 +1,50 @@
+Virtual Assistant Application Setup
+
+Table of Contents
+
+Setting Up a Virtual Environment
+Installation
+Creation and Activation
+Installing Required Libraries
+Setting Up a Virtual Environment
+
+Installation
+It's recommended to use a virtual environment for your project to manage dependencies. To set one up:
+
+Install virtualenv:
+bash
+Copy code
+pip install virtualenv
+Creation and Activation
+After installing virtualenv, navigate to your project directory in the terminal or command prompt:
+
+Create a virtual environment named 'venv':
+bash
+Copy code
+virtualenv venv
+Activate the virtual environment:
+Windows:
+bash
+Copy code
+.\venv\Scripts\activate
+macOS and Linux:
+bash
+Copy code
+source venv/bin/activate
+Installing Required Libraries
+
+Once inside the virtual environment, install the necessary libraries:
+
+Install Google Cloud libraries:
+bash
+Copy code
+pip install --upgrade google-cloud-speech google-cloud-translate
+Install the Transformers library:
+bash
+Copy code
+pip install transformers
+Install SpaCy and its English language model:
+bash
+Copy code
+pip install spacy
+python -m spacy download en_core_web_sm

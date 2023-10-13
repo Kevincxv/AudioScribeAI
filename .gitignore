@@ -127,11 +127,7 @@ dist
 .pnp.*
 
 # Python venv
-<<<<<<< HEAD
-venv/
-=======
 venv
 output.wav
 requirements.txt
 ```
->>>>>>> Kevin-Camacho

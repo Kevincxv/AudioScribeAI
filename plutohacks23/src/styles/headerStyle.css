@@ -1,0 +1,19 @@
+.navbar {
+    display: flex;
+    justify-content: space-around;
+    padding: 10px 0;
+    background-color: #6AFF00;
+    width: 100%;
+  }
+  
+  .nav-item {
+    padding: 10px 20px;
+    text-decoration: none;
+    color: #9500FF;
+    transition: background-color 0.3s;
+  }
+  
+  .nav-item:hover {
+    background-color: #9500FF;
+    color: #6AFF00;
+  }

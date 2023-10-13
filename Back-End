@@ -1,25 +1,35 @@
+import tkinter as tk
+from tkinter import filedialog, messagebox
+import pyaudio
+import wave
+import pygame
 from google.cloud import speech_v1p1beta1 as speech
 from google.cloud import translate_v2 as translate
 from transformers import BartForConditionalGeneration, BartTokenizer
 import spacy
 from spacy.matcher import Matcher
+import threading
+
+recording = False
+audio_path = "output.wav"
 
 # 1. Audio Conversation to Transcript
-def transcribe_audio(audio_path):
+def transcribe_audio(audio_path, encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16, sample_rate=44100, language="en-US"):
     client = speech.SpeechClient()
     with open(audio_path, 'rb') as audio_file:
         content = audio_file.read()
     audio = speech.RecognitionAudio(content=content)
     config = speech.RecognitionConfig(
-        encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
-        sample_rate_hertz=16000,
-        language_code="en-US",
+        encoding=encoding,
+        sample_rate_hertz=sample_rate,
+        language_code=language,
     )
     response = client.recognize(config=config, audio=audio)
     transcript = ""
     for result in response.results:
         transcript += result.alternatives[0].transcript
     return transcript
+
 
 # 2. Summarize the Transcript
 def summarize_text(text):
@@ -35,11 +45,21 @@ def summarize_text(text):
 def extract_appointments(text):
     nlp = spacy.load("en_core_web_sm")
     doc = nlp(text)
-    matcher = Matcher(nlp.vocab)
-    pattern = [{"LOWER": "reminder"}, {"POS": "ADP", "OP": "?"}, {"POS": "NOUN", "OP": "?"}, {"POS": "NUM", "OP": "?"}, {"ENT_TYPE": "DATE", "OP": "+"}]
-    matcher.add("APPOINTMENT_PATTERN", [pattern])
-    matches = matcher(doc)
-    reminders = [doc[start:end].text for match_id, start, end in matches]
+    
+    reminders = []
+    for ent in doc.ents:
+        if ent.label_ == "DATE":
+            prev_token = ent.start - 1
+            next_token = ent.end
+            if prev_token >= 0 and doc[prev_token].lower_ in ["appointment", "meeting"]:
+                label = "Appointment" if doc[prev_token].lower_ == "appointment" else "Meeting"
+                time_str = ""
+                if next_token < len(doc) and doc[next_token].lower_ == "at":
+                    time_ent = [e for e in doc.ents if e.label_ == "TIME" and e.start > next_token]
+                    if time_ent:
+                        time_str = " at " + time_ent[0].text + " EST"
+                reminders.append(f"{label}: {ent.text}{time_str}")
+                
     return reminders
 
 # 4. Multilingual Audio to English Transcript
@@ -52,20 +72,95 @@ def transcribe_and_translate(audio_path):
     result = translate_client.translate(transcript, target_language="en")
     return result["translatedText"]
 
+def start_recording_thread():
+    global recording
+    recording = True
+    p = pyaudio.PyAudio()
+    stream = p.open(format=pyaudio.paInt16, channels=1, rate=44100, input=True, frames_per_buffer=1024)
+    frames = []
+
+    while recording:
+        data = stream.read(1024)
+        frames.append(data)
+
+    stream.stop_stream()
+    stream.close()
+    p.terminate()
+
+    with wave.open(audio_path, 'wb') as wf:
+        wf.setnchannels(1)
+        wf.setsampwidth(p.get_sample_size(pyaudio.paInt16))
+        wf.setframerate(44100)
+        wf.writeframes(b''.join(frames))
+
+def start_recording():
+    thread = threading.Thread(target=start_recording_thread)
+    thread.start()
+
+def stop_recording():
+    global recording
+    recording = False
+
+def play_audio():
+    pygame.mixer.init()
+    pygame.mixer.music.load(audio_path)
+    pygame.mixer.music.play()
+
+def display_transcript():
+    transcript = transcribe_audio(audio_path)
+    messagebox.showinfo("Transcript", transcript)
+
+def display_summary():
+    transcript = transcribe_audio(audio_path)
+    summary = summarize_text(transcript)
+    bullet_points = summary.split('. ')
+    formatted_summary = '\n'.join(['• ' + point for point in bullet_points if point])
+    messagebox.showinfo("Summary", formatted_summary)
+
+def display_reminders():
+    transcript = transcribe_audio(audio_path)
+    reminders = extract_appointments(transcript)
+    messagebox.showinfo("Reminders", "\n".join(reminders))
+
+def display_translation():
+    translated_text = transcribe_and_translate(audio_path)
+    messagebox.showinfo("Translated Transcript", translated_text)
+
 # Main function to demonstrate the functionalities
 def main():
-    audio_path = "/Users/kevin/Documents/Pluto-Hacks-2023/Test.wav"
-    transcript = transcribe_audio(audio_path)
-    print("Transcript:", transcript)
-    
-    summary = summarize_text(transcript)
-    print("Summary:", summary)
-    
-    reminders = extract_appointments(transcript)
-    print("Reminders:", reminders)
-    
-    translated_text = transcribe_and_translate(audio_path)
-    print("Translated Transcript:", translated_text)
+    root = tk.Tk()
+    root.title("Audio Processing App")
+
+    start_button = tk.Button(root, text="Accept Call", command=start_recording)
+    start_button.pack()
+
+    stop_button = tk.Button(root, text="End Call", command=stop_recording)
+    stop_button.pack()
+
+    play_button = tk.Button(root, text="Play Audio", command=play_audio)
+    play_button.pack()
+
+    transcript_button = tk.Button(root, text="View Transcript", command=display_transcript)
+    transcript_button.pack()
+
+    summary_button = tk.Button(root, text="View Summary", command=display_summary)
+    summary_button.pack()
+
+    reminders_button = tk.Button(root, text="View Reminders", command=display_reminders)
+    reminders_button.pack()
+
+    # Dropdown menu for language selection
+    languages = ["en", "es", "fr", "de", "zh", "ja"]  # Add more languages as needed
+    selected_language = tk.StringVar(root)
+    selected_language.set("en")  # Default language is English
+    language_dropdown = tk.OptionMenu(root, selected_language, *languages)
+    language_dropdown.pack()
+
+    translate_button = tk.Button(root, text="Translate Transcript", command=lambda: display_translation(selected_language.get()))
+    translate_button.pack()
+
+    root.mainloop()
 
 if __name__ == "__main__":
     main()
+    

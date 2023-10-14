@@ -20,7 +20,8 @@ body {
 
 .buttonList {
     display: flex;
-    margin: 0px;
+    margin-top: 180px;
+    margin-bottom: 20px;
     padding: 20px;
     justify-content: space-evenly;
     flex-wrap: wrap;

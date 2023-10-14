@@ -1,16 +1,16 @@
 import ContactUs from './components/ContactUs';
-import DemoIndex from './components/DemoIndex';
-import DemoPost from './components/DemoPost';
+import Demo from './components/DemoIndex';
 import Home from './components/Home';
+import AboutUs from './components/AboutUs';
+import DemoPost from './components/DemoPost';
 
 function App() {
 
   return (
     <>
-      <ContactUs />
-      <DemoIndex />
+      <Demo />
     </>
   );
 }
 
-export default App
+export default App;

@@ -16,6 +16,7 @@ app = Flask(__name__)
 CORS(app)
 
 API_KEY = os.getenv('API_KEY')
+API_URL = 'https://api.openai.com/v1/chat/completions'
 
 recording = []
 samplerate = 44100
@@ -37,24 +38,23 @@ def detect_language(text):
         print("Error detecting language. Defaulting to English.")
         return "en"
 
-def request_to_openai(url, data, role_system, content_user):
+def openai_request(role_system, content_user):
     headers = {
         'Authorization': f'Bearer {API_KEY}',
         'Content-Type': 'application/json',
         'User-Agent': 'OpenAI Python Client'
     }
-    data["model"] = "gpt-3.5-turbo"
-    data["messages"] = [
-        {"role": "system", "content": role_system},
-        {"role": "user", "content": content_user}
-    ]
-    
+    data = {
+        "model": "gpt-3.5-turbo",
+        "messages": [
+            {"role": "system", "content": role_system},
+            {"role": "user", "content": content_user}
+        ]
+    }
     try:
-        response = requests.post(url, headers=headers, json=data)
+        response = requests.post(API_URL, headers=headers, json=data)
         response.raise_for_status()
-        api_response_content = response.json()['choices'][0]['message']['content']
-        print(f"API Response: {api_response_content}")  # Debug log
-        return api_response_content
+        return response.json()['choices'][0]['message']['content']
     except requests.RequestException as e:
         print(f"Error: {e}")
         return None
@@ -99,14 +99,14 @@ def summarize():
     sanitized_transcription = transcription.replace("\n", " ").strip()[:1000]
     content = f'Provide a bullet-point summary for the following customer service call: {sanitized_transcription}'
     role_system = "You are a helpful assistant that provides summaries for customer service calls."
-    summary = request_to_openai('https://api.openai.com/v1/chat/completions', {}, role_system, content)
+    summary = openai_request(role_system, content)
 
 
 def reminders():
     global extracted_reminders, lines
     content = f'From the following conversation, identify and format the information about any appointments, reminders, or meetings. Text: {transcription}'
     role_system = "You are a helpful assistant that extracts and formats information about reminders, meetings, and appointments from conversations."
-    extracted_info = request_to_openai('https://api.openai.com/v1/chat/completions', {}, role_system, content)
+    extracted_info = openai_request(role_system, content)
     lines = extracted_info.split("\n")
     extracted_reminders = "\n".join([line for line in lines if line.startswith(("Meeting:", "Reminder:", "Appointment Date:", "Appointment Time:", "Timezone:"))])
         
@@ -119,7 +119,7 @@ def translate():
         return
     content = f"Translate the following text from {detected_lang} to English: {transcription}"
     role_system = "You are a helpful assistant that translates text."
-    translation = request_to_openai('https://api.openai.com/v1/chat/completions', {}, role_system, content)
+    translation = openai_request(role_system, content)
 
 @app.route('/start_recording', methods=['POST'])
 def start_recording_route():

@@ -12,7 +12,6 @@ from dotenv import load_dotenv
 import nltk
 from nltk.tokenize import sent_tokenize
 
-
 load_dotenv()
 nltk.download('punkt')
 warnings.filterwarnings("ignore", category=UserWarning)
@@ -130,9 +129,6 @@ def reminders():
             reminders_output.append(f"Reminder: {line.split('to')[1].strip()}")
     
     extracted_reminders = "\n".join(reminders_output)
-
-
-
     
 def load_latest_recording():
     global recording
@@ -171,21 +167,10 @@ def translate(target_language):
     labeled_translation = [f"{'Agent' if i % 2 == 0 else 'Customer'}: {sentence}" for i, sentence in enumerate(sentences)]
     translation = "\n".join(labeled_translation)
 
-
-
-# @app.route('/start_recording', methods=['POST'])
-# def start_recording_route():
-#     if os.path.exists("latest_recording.wav"):
-#         return jsonify({"message": "A recording already exists. Use /load_latest_recording to load it or /stop_recording to overwrite it."}), 200
-#     start_recording()
-#     return jsonify({"message": "Recording started"}), 200
-
 @app.route('/start_recording', methods=['POST'])
 def start_recording_route():
     start_recording()
     return jsonify({"message": "Recording started"}), 200
-
-
 
 @app.route('/stop_recording', methods=['POST'])
 def stop_recording_route():
@@ -234,15 +219,12 @@ def translate_route(target_language):
     }
     return jsonify(formatted_translation), 200
 
-
-
 @app.route('/load_latest_recording', methods=['GET'])
 def load_latest_recording_route():
     response = load_latest_recording()
     if response:
         return jsonify({"error": response}), 400
     return jsonify({"message": "Latest recording loaded"}), 200
-
 
 if __name__ == '__main__':
     app.run(debug=True)

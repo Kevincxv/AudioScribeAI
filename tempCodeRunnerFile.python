@@ -1,2 +1,0 @@
-(transcript, target_language="en")
-    return result["translatedText"]

@@ -172,14 +172,6 @@ def translate(target_language):
     translation = "\n".join(labeled_translation)
 
 
-
-# @app.route('/start_recording', methods=['POST'])
-# def start_recording_route():
-#     if os.path.exists("latest_recording.wav"):
-#         return jsonify({"message": "A recording already exists. Use /load_latest_recording to load it or /stop_recording to overwrite it."}), 200
-#     start_recording()
-#     return jsonify({"message": "Recording started"}), 200
-
 @app.route('/start_recording', methods=['POST'])
 def start_recording_route():
     start_recording()

@@ -131,3 +131,4 @@ venv
 output.wav
 requirements.txt
 ```
+.vscode/

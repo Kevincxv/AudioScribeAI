@@ -147,37 +147,37 @@ def load_recording():
         print("No recording file found. Please record first.")
 
 
-root = tk.Tk()
-root.title("Customer Service Helper")
+# root = tk.Tk()
+# root.title("Customer Service Helper")
 
-start_btn = tk.Button(root, text="Start Recording", command=start_recording)
-start_btn.pack(pady=10)
+# start_btn = tk.Button(root, text="Start Recording", command=start_recording)
+# start_btn.pack(pady=10)
 
-stop_btn = tk.Button(root, text="Stop Recording", command=stop_recording)
-stop_btn.pack(pady=10)
+# stop_btn = tk.Button(root, text="Stop Recording", command=stop_recording)
+# stop_btn.pack(pady=10)
 
-playback_btn = tk.Button(root, text="Playback", command=playback)
-playback_btn.pack(pady=10)
+# playback_btn = tk.Button(root, text="Playback", command=playback)
+# playback_btn.pack(pady=10)
 
-transcribe_btn = tk.Button(root, text="Transcribe", command=transcribe)
-transcribe_btn.pack(pady=10)
+# transcribe_btn = tk.Button(root, text="Transcribe", command=transcribe)
+# transcribe_btn.pack(pady=10)
 
-summarize_btn = tk.Button(root, text="Summarize", command=summarize)
-summarize_btn.pack(pady=10)
+# summarize_btn = tk.Button(root, text="Summarize", command=summarize)
+# summarize_btn.pack(pady=10)
 
-reminders_btn = tk.Button(root, text="Reminders", command=reminders)
-reminders_btn.pack(pady=10)
+# reminders_btn = tk.Button(root, text="Reminders", command=reminders)
+# reminders_btn.pack(pady=10)
 
-load_btn = tk.Button(root, text="Load Recording", command=load_recording)
-load_btn.pack(pady=10)
+# load_btn = tk.Button(root, text="Load Recording", command=load_recording)
+# load_btn.pack(pady=10)
 
-language_var = tk.StringVar(root)
-language_var.set("Select Language")
+# language_var = tk.StringVar(root)
+# language_var.set("Select Language")
 
-lang_dropdown = tk.OptionMenu(root, language_var, *supported_languages.keys())
-lang_dropdown.pack(pady=10)
+# lang_dropdown = tk.OptionMenu(root, language_var, *supported_languages.keys())
+# lang_dropdown.pack(pady=10)
 
-translate_btn = tk.Button(root, text="Translate", command=translate)
-translate_btn.pack(pady=10)
+# translate_btn = tk.Button(root, text="Translate", command=translate)
+# translate_btn.pack(pady=10)
 
-root.mainloop()
+# root.mainloop()

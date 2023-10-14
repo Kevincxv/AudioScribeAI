@@ -1,11 +1,10 @@
 body {
-    background-image: url('../assets/images/blurry-gradient-haikei.svg');
+    background-image: url('../assets/images/front-page-background.png');
     background-size: cover;
     margin: 0px;
     padding: 0px;
     color: #e0e0e0; /* Light grey text for contrast */
-    font-family: 'Playfair Display', serif;
-    font-family: 'Poppins', sans-serif;
+    font-family: 'Oswald', sans-serif;
 }
 
 .profile-container {
@@ -38,6 +37,7 @@ body {
     flex-wrap: nowrap;
     justify-content: center;
     align-items: center;
+    font-family: 'Oswald', sans-serif;
     
 }
 .editable-content {
@@ -63,6 +63,8 @@ body {
     border-radius: 5px;
     font-size: 16px;
     transition: box-shadow 0.3s; /* Transition for smooth effects */
+    transition: all 0.3s ease-in-out;
+
 }
 
 .answer {
@@ -71,7 +73,9 @@ body {
 }
 
 .answer:hover {
-    box-shadow: 0 0 10px #4CAF50; /* Green glow on hover */
+    box-shadow: 0 0 30px #4CAF50; /* Green glow on hover */
+    transform: scale(1.1);
+    
 }
 
 .decline {
@@ -80,7 +84,9 @@ body {
 }
 
 .decline:hover {
-    box-shadow: 0 0 10px #f44336; /* Red glow on hover */
+    box-shadow: 0 0 30px #f44336; /* Red glow on hover */
+    transform: scale(1.1);
+
 }
 
 .transcript {
@@ -104,9 +110,12 @@ body {
     padding: 10px;
     resize: none;
     width: 100%;
+    font-family: 'Oswald', sans-serif;
+
 }
 
 p {
     color: #fff;
     margin: 20px 0;
+    font-family: 'Oswald', sans-serif;
 }

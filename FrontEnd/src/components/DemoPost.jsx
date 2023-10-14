@@ -4,6 +4,7 @@ import axios from 'axios';
 
 function DemoPost() {
     const [transcript, setTranscript] = useState(null);
+    const [tempTranscript, setTempTranscript] = useState(null); // new state variable
     const [summary, setSummary] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -17,15 +18,17 @@ function DemoPost() {
             .then((res) => {
                 console.log(res.data.transcript);
                 setTranscript(res.data.transcript);
+                setTempTranscript(res.data.transcript); 
                 setShowTranscript(true);
                 setShowSummary(false);
             })
             .catch((err) => {
                 console.log(err);
             });
-            setLoading(false);
+        setLoading(false);
+        document.querySelector('.transcript').classList.add('show');
     };
-
+    
     const fetchSummary = async () => {
         setLoading(true);
         await axios
@@ -39,6 +42,7 @@ function DemoPost() {
                 console.log(err);
             });
         setLoading(false);
+        document.querySelector('.transcript').classList.add('show');
     };
 
     const playAudio = async () => {
@@ -64,7 +68,7 @@ function DemoPost() {
         <>
             {showTranscript || showSummary? (
                 <div className="transcript">
-                    <textarea value={transcript || 'No transcript available.'} readOnly />
+                    <textarea value={tempTranscript || 'No transcript available.'} readOnly /> {/* use tempTranscript */}
                 </div>
             ) : (
                 <div className="header">
@@ -79,7 +83,7 @@ function DemoPost() {
             )}
             <div className="buttonList">
                 <button className="button" onClick={playAudio}>
-                    PlayBack
+                    Playback
                 </button>
                 <button className="button" onClick={fetchTranscript}>
                     Transcript

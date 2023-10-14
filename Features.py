@@ -76,7 +76,19 @@ def transcribe():
     sf.write(filename, recording, samplerate)
     model = whisper.load_model("base")
     result = model.transcribe(filename)
-    transcription = result["text"]
+    raw_transcription = result["text"]
+
+    # Split transcription into sentences
+    sentences = [s.strip() for s in raw_transcription.split('.') if s]
+    
+    labeled_transcription = []
+    role = "Agent"
+    
+    for sentence in sentences:
+        labeled_transcription.append(f"{role}: {sentence}.")
+        role = "Customer" if role == "Agent" else "Agent"
+        
+    transcription = "\n".join(labeled_transcription)
     print(transcription)
 
 def request_to_openai(url, data):

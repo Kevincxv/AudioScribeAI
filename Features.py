@@ -100,7 +100,7 @@ def request_to_openai(url, data):
     data["model"] = "gpt-3.5-turbo"
     try:
         response = requests.post(url, headers=headers, json=data)
-        response.raise_for_status()  # This will raise an HTTPError if the HTTP request returned an unsuccessful status code
+        response.raise_for_status()
         return response.json()['choices'][0]['message']['content']
     except requests.RequestException as e:
         print(f"Error: {e}")

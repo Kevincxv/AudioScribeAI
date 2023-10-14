@@ -20,16 +20,9 @@ function ContactUs({ onNameChange, onEmployeeClick }) {
   return (
     <div className="contact-us-container">
       <div className="box-container">
-        <h3>Contact Us</h3>
             <div className="name-input-container">
-            <input
-                type="text"
-                value={name}
-                onChange={handleNameChange}
-                placeholder="Enter your name"
-            />
             </div>
-            <button onClick={handleButtonClick}>Enter</button>
+            <button onClick={handleButtonClick}>Contact Us</button>
             <button onClick={onEmployeeClick}>Employee? Click Here</button>
         </div>
     </div>

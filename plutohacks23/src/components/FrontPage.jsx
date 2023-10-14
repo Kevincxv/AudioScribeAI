@@ -20,7 +20,6 @@ function FrontPage() {
       ) : (
         <>
           <Home />
-          <AboutUs />
           <ContactUs onEmployeeClick={handleEmployeeClick} />
         </>
       )}

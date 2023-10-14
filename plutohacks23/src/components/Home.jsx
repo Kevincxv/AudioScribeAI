@@ -6,7 +6,7 @@ function Home() {
     <div className="home-container">
       <div className="home">
         <h1>AudioScribeAI</h1>
-        <p>We are a team of developers working on a cool project.</p>
+        <p>Unlock the Power of Audio with AudioScribeAI: Where Every Word Matters</p>
       </div>
     </div>
   );

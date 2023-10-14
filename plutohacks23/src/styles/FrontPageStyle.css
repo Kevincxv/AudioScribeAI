@@ -1,24 +1,4 @@
-/* AboutUsStyle */
-.about-us-container {
-  padding: 20px;
-  /* border: 2px solid #000;
-  border-radius: 20px; */
-  margin-bottom: -170px;
-}
-
-.about-us {
-  background-color: #fff;
-  color: #212529;
-  padding: 50px;
-  text-align: center; 
-  margin: 0;
-  /* border-radius: 20px; */
-  border: 2px solid #000;
-  border-radius: 20px;
-  box-shadow: 0px 0px 50px #008080;
-}
-
-.about-us h1 {
+/* .about-us h1 {
   font-size: 48px;
   margin-bottom: 20px;
 }
@@ -28,7 +8,7 @@
   line-height: 1.5;
 }
 
-
+ */
 
 
 
@@ -36,16 +16,14 @@
 /* ContactUsStyle */
 .contact-us-container {
   height: 100vh; 
-  margin-top: -10px;
+  margin-top: -390px;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
 .box-container{
-  background-color: #f2f2f2;
   border-radius: 5px;
-  box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.2);
   padding: 20px;
   width: 400px;
   display: flex;
@@ -65,16 +43,23 @@
 }
 
 .box-container button {
-  background-color: #4db6ac; /* Button background color */
-  color: #fff; /* Text color */
-  padding: 10px 20px; /* Padding for the button */
+  background: linear-gradient(135deg, #005b8e, #0056b3); /* Gradient background */
+  color: #fff;
+  padding: 10px 20px;
   font-size: 18px;
+  border-radius: 5px;
   border: none;
   cursor: pointer;
+  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+  text-transform: uppercase;
+  margin-top: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle box shadow */
+
 }
 
 .box-container button:hover {
   background-color: #0056b3; /* Hover color */
+  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
 }
 
 
@@ -133,10 +118,14 @@ button {
   padding: 10px;
   border: none;
   border-radius: 5px;
-  background-color: #5c9d90;
+  background-color: #005b8e;
   color: white;
   cursor: pointer;
 }
+button button:hover {
+  background-color: #0056b3; /* Hover color */
+}
+
 
 
 
@@ -146,20 +135,19 @@ button {
 /* HomeStyle */
 .home-container {
   padding: 20px;
-  /* border: 2px solid #000;
-  border-radius: 5px; */
+  margin-top: 200px;
   margin-bottom: 20px;
 }
 
 .home {
-  background-color: #fff;
-  color: #212529;
+  /* background-color: #fff; */
+  color: #fff;
   padding: 50px;
   text-align: center; 
   margin: 0;
-  border: 2px solid #000;
-  border-radius: 20px;
-  box-shadow: 0px 0px 50px #008080;
+  /* border: 2px solid #000;
+  border-radius: 20px; */
+  /* box-shadow: 0px 0px 50px #008080; */
 
 }
 
@@ -171,19 +159,38 @@ button {
 .home h1 {
   font-size: 48px;
   margin-bottom: 20px;
+  color: #fff;
+  position: relative;
 }
 
-.home p {
+/* .home p {
   font-size: 24px;
   line-height: 1.5;
-}
+  color:  #fff;
+} */
 
 
 body {
-  background-image: url("../assets/images/front-page-background.png");
+  /* background-image: url("../assets/images/front-page-background.png");
+  background-size: cover;
+  margin: 0;
+  padding: 0;
+  background-position: center;
+  background-repeat: no-repeat; */
+  background-image: url("../assets/images/bg3.png");
   background-size: cover;
   margin: 0;
   padding: 0;
   background-position: center;
   background-repeat: no-repeat;
+  animation: slide 20s linear infinite;
+}
+
+@keyframes slide {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 100% 0;
+  }
 }

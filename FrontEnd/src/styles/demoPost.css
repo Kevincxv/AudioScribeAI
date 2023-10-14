@@ -2,7 +2,9 @@ body {
     background-color: #1a1a1a; /* Dark background */
     color: #e0e0e0; /* Light grey text */
     font-family: 'Oswald', sans-serif;
-    
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .transcript {

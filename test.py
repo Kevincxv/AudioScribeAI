@@ -5,8 +5,11 @@ import requests
 import soundfile as sf
 import whisper
 import warnings
+import os
 
-API_KEY = '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'
+API_KEY = os.environ.get('OPENAI_API_KEY')
+if not API_KEY:
+    raise ValueError("Please set the OPENAI_API_KEY environment variable.")
 
 recording = None
 samplerate = 44100
@@ -19,107 +22,93 @@ def callback(indata, frames, time, status):
     global recording
     recording.append(indata.copy())
 
-def on_start_recording():
+def start_recording():
     global stream
     recording.clear()
     stream = sd.InputStream(samplerate=samplerate, channels=1, dtype=np.int16, callback=callback)
     stream.start()
 
-def on_stop_recording():
+def stop_recording():
     global stream, recording
     stream.stop()
     stream.close()
     recording = np.concatenate(recording, axis=0)
     np.save("recording.npy", recording)
 
-def on_playback():
+def playback():
     global recording
     sd.play(recording, samplerate=samplerate)
 
-def on_transcribe():
-    global recording
-    
+def transcribe():
+    global transcription, recording
     filename = "recording.wav"
     sf.write(filename, recording, samplerate)
     model = whisper.load_model("base")
     result = model.transcribe(filename)
-    print(result["text"])
-    
+    transcription = result["text"]
     print(transcription)
 
-
-def on_summarize():
-    global transcription
-    
-    endpoint = "https://api.openai.com/v1/engines/davinci/completions"
-
+def request_to_openai(endpoint, data):
     headers = {
         'Authorization': f'Bearer {API_KEY}',
         'Content-Type': 'application/json',
         'User-Agent': 'OpenAI Python Client'
     }
+    try:
+        response = requests.post(endpoint, headers=headers, json=data)
+        response.raise_for_status()
+        return response.json()["choices"][0]["text"].strip()
+    except requests.RequestException as e:
+        print("API Error:", e)
 
-    data = {
-        'prompt': f"Summarize the following customer service call: {transcription}",
-        'max_tokens': 150
-    }
-
-    response = requests.post(endpoint, headers=headers, json=data)
-
-    if response.status_code == 200:
-        summary = response.json()["choices"][0]["text"].strip()
-        print("Summary:", summary)
-    else:
-        print("Error:", response.status_code, response.text)
-
-
-def on_extract_reminders():
+def summarize():
     global transcription
+    if not transcription:
+        print("Please transcribe the audio first.")
+        return
+
+    sanitized_transcription = transcription.replace("\n", " ").strip()[:1000]
+
+    prompt = f"Summarize the following customer service call: {sanitized_transcription}"
+    data = {'prompt': prompt, 'max_tokens': 150}
+    summary = request_to_openai('https://api.openai.com/v1/engines/davinci/completions', data)
     
-    # Check if transcription exists
+    if summary:
+        print("Summary:", summary)
+
+
+def extract_reminders():
+    global transcription
     if not transcription:
         print("Please transcribe the audio first.")
         return
     
-    headers = {
-        'Authorization': 'Bearer ' + API_KEY,
-        'Content-Type': 'application/json',
-        'User-Agent': 'OpenAI Python Client'
-    }
-    
-    data = {
-        'prompt': 'Extract reminders, meetings, and appointment dates from the following text: ' + transcription,
-        'max_tokens': 200
-    }
-    
-    response = requests.post('https://api.openai.com/v1/engines/davinci/completions', headers=headers, json=data)
-    
-    if response.status_code == 200:
-        extracted_info = response.json()["choices"][0]["text"].strip()
+    prompt = f'Extract reminders, meetings, and appointment dates from the following text: {transcription}'
+    data = {'prompt': prompt, 'max_tokens': 200}
+    extracted_info = request_to_openai('https://api.openai.com/v1/engines/davinci/completions', data)
+    if extracted_info:
         print("Extracted Information:", extracted_info)
-    else:
-        print("Error:", response.status_code, response.text)
 
 
 root = tk.Tk()
 root.title("Customer Service Helper")
 
-start_btn = tk.Button(root, text="Start Recording", command=on_start_recording)
+start_btn = tk.Button(root, text="Start Recording", command=start_recording)
 start_btn.pack(pady=10)
 
-stop_btn = tk.Button(root, text="Stop Recording", command=on_stop_recording)
+stop_btn = tk.Button(root, text="Stop Recording", command=stop_recording)
 stop_btn.pack(pady=10)
 
-playback_btn = tk.Button(root, text="Playback", command=on_playback)
+playback_btn = tk.Button(root, text="Playback", command=playback)
 playback_btn.pack(pady=10)
 
-transcribe_btn = tk.Button(root, text="Transcribe", command=on_transcribe)
+transcribe_btn = tk.Button(root, text="Transcribe", command=transcribe)
 transcribe_btn.pack(pady=10)
 
-summarize_btn = tk.Button(root, text="Summarize", command=on_summarize)
+summarize_btn = tk.Button(root, text="Summarize", command=summarize)
 summarize_btn.pack(pady=10)
 
-reminders_btn = tk.Button(root, text="Extract Reminders", command=on_extract_reminders)
+reminders_btn = tk.Button(root, text="Extract Reminders", command=extract_reminders)
 reminders_btn.pack(pady=10)
 
 root.mainloop()

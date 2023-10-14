@@ -130,5 +130,6 @@ dist
 venv
 output.wav
 requirements.txt
+.env
 ```
 .vscode/

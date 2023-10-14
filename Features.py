@@ -5,6 +5,7 @@ import requests
 import soundfile as sf
 import whisper
 import warnings
+from dotenv import load_dotenv
 import os
 
 API_KEY = os.environ.get('OPENAI_API_KEY')
@@ -20,7 +21,7 @@ warnings.filterwarnings("ignore", category=UserWarning)
 
 supported_languages = {"French": "French:", "Spanish": "Spanish:", "German": "German:", "Italian": "Italian:", "Portuguese": "Portuguese:", "Dutch": "Dutch:", "Russian": "Russian:", "Japanese": "Japanese:", "Chinese": "Chinese:", "Korean": "Korean:", "Arabic": "Arabic:", "Hindi": "Hindi:", "Swedish": "Swedish:", "Danish": "Danish:", "Finnish": "Finnish:", "Norwegian": "Norwegian:", "Polish": "Polish:", "Turkish": "Turkish:", "Greek": "Greek:", "Hebrew": "Hebrew:"}
 
-def callback(indata):
+def callback(indata, outdata, frames, timeinfo):
     global recording
     recording.append(indata.copy())
 

@@ -1,7 +1,11 @@
 body {
-    background-color: #1a1a1a; /* Dark background */
+    background-image: url('../assets/images/blurry-gradient-haikei.svg');
+    background-size: cover;
+    margin: 0px;
+    padding: 0px;
     color: #e0e0e0; /* Light grey text for contrast */
-    font-family: Arial, sans-serif;
+    font-family: 'Playfair Display', serif;
+    font-family: 'Poppins', sans-serif;
 }
 
 .profile-container {
@@ -82,13 +86,12 @@ body {
 .transcript {
     background-color: #333;
     color: #fff;
-    margin: 20px 0;
+    margin: 50px;
     padding: 20px;
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
-    width: 100%;
 }
 
 .transcript textarea {

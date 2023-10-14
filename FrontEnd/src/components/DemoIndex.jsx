@@ -46,7 +46,7 @@ function DemoIndex() {
                 <DemoPost name={callerName} />
             ) : (
                 <div className="profile-container">
-                    <h2>Waiting for a call...</h2>
+                    <h2>Someone is calling...</h2>
                     <img src={images} alt="Profile" className="profile-pic" />
                     <div className="button-container">
                         {!isAnswered && !isDeclined && (

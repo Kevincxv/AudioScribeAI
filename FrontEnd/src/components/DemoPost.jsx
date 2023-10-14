@@ -12,37 +12,38 @@ function DemoPost() {
 
     const fetchTranscript = async () => {
         setLoading(true);
-        try {
-            // Simulate a delay to show loading state
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            setTranscript('This is a temporary transcript.');
-            setShowTranscript(true);
-            setShowSummary(false);
-        } catch (err) {
-            setError(err.message);
-        } finally {
+        await axios
+            .get('http://localhost:5000/transcribe')
+            .then((res) => {
+                console.log(res.data.transcript);
+                setTranscript(res.data.transcript);
+                setShowTranscript(true);
+                setShowSummary(false);
+            })
+            .catch((err) => {
+                console.log(err);
+            });
             setLoading(false);
-        }
     };
 
     const fetchSummary = async () => {
         setLoading(true);
-        try {
-            // Simulate a delay to show loading state
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            setSummary('This is a temporary summary.');
-            setShowSummary(true);
-            setShowTranscript(false);
-        } catch (err) {
-            setError(err.message);
-        } finally {
-            setLoading(false);
-        }
+        await axios
+            .get('http://localhost:5000/summarize')
+            .then((res) => {
+                setSummary(res.data.summary);
+                setShowSummary(true);
+                setShowTranscript(false);
+            })
+            .catch((err) => {
+                console.log(err);
+            });
+        setLoading(false);
     };
 
     const playAudio = async () => {
         try {
-            const response = await axios.get('/play_audio');
+            const response = await axios.get('http://localhost:5000/play_audio');
             const audio = new Audio(response.data.audio_url);
             audio.play();
         } catch (err) {
@@ -52,7 +53,7 @@ function DemoPost() {
 
     const displayReminders = async () => {
         try {
-            const response = await axios.get('/display_reminders');
+            const response = await axios.get('http://localhost:5000/display_reminders');
             window.open(response.data.reminders_url, '_blank');
         } catch (err) {
             setError(err.message);

@@ -1,0 +1,107 @@
+body {
+    background-color: #1a1a1a; /* Dark background */
+    color: #e0e0e0; /* Light grey text */
+    font-family: 'Oswald', sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.transcript {
+    position: relative;
+    margin: 20px 0;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f5f5f5;
+    overflow: hidden;
+    transition: all 0.3s ease-in-out;
+    max-height: 0;
+}
+
+.transcript.show {
+    max-height: 500px;
+    transition: all 0.3s ease-in-out;
+}
+
+.header {
+    text-align: center;
+    padding: 20px;
+}
+
+.header-title {
+    font-size: 64px;
+    margin-bottom: 10px;
+}
+
+.header-description {
+    font-size: 48px;
+}
+
+.buttonList {
+    display: flex;
+    margin-top: 50px;
+    margin-bottom: 20px;
+    padding: 20px;
+    justify-content: space-evenly;
+    flex-wrap: wrap;
+    flex-direction: row;
+}
+.button {
+    font-family: 'Oswald', sans-serif;
+    animation: pulse 2s infinite;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease-in-out;
+}
+.button::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.5);
+    opacity: 0;
+    transition: all 0.3s ease-in-out;
+}
+
+.button:hover::before {
+    width: 200%;
+    height: 200%;
+    opacity: 1;
+}
+.button:hover {
+    box-shadow: 0 0 0 10px rgba(255, 255, 255, 0.5);
+    transform: scale(1.1);
+}
+
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.5);
+    }
+    70% {
+        box-shadow: 0 0 0 20px rgba(255, 255, 255, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+    }
+}
+
+button {
+    height: 250px;
+    width: 250px;
+    font-family: 'Young Serif', serif;
+    font-size: 40px;
+    border-radius: 50%;
+    background-color: #008080; /* Slightly lighter than the background */
+    color: #e0e0e0; /* Light grey text */
+    border: none;
+    cursor: pointer;
+    transition: box-shadow 0.3s, background-color 0.3s; /* Transition for smooth effects */
+}
+
+

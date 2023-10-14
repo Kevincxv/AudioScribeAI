@@ -72,7 +72,8 @@ def stop_recording():
     global stream
     stream.stop()
     stream.close()
-    np.save("recording.npy", np.concatenate(recording, axis=0))
+    filename = "latest_recording.wav"
+    sf.write(filename, np.concatenate(recording, axis=0), samplerate)
 
 def playback():
     if not recording:
@@ -83,7 +84,7 @@ def transcribe():
     global transcription
     if not recording:
         return "No recording data available."
-
+    
     filename = "recording.wav"
     sf.write(filename, np.concatenate(recording, axis=0), samplerate)
     model = whisper.load_model("base")
@@ -91,8 +92,15 @@ def transcribe():
     raw_transcription = result["text"]
     
     sentences = [s.strip() for s in raw_transcription.split('.') if s]
-    labeled_transcription = [f"{'Agent' if i % 2 == 0 else 'Customer'}: {sentence}." for i, sentence in enumerate(sentences)]
+    
+    start_index = sentences[0].find("Agent: ")
+    if start_index == -1:
+        labeled_transcription = [f"{'Customer' if i % 2 == 0 else 'Agent'}: {sentence}." for i, sentence in enumerate(sentences)]
+    else:
+        labeled_transcription = [f"{'Agent' if i % 2 == 0 else 'Customer'}: {sentence}." for i, sentence in enumerate(sentences)]
+    
     transcription = "\n".join(labeled_transcription)
+
 
 def summarize():
     global summary
@@ -108,11 +116,25 @@ def reminders():
     role_system = "You are a helpful assistant that extracts and formats information about reminders, meetings, and appointments from conversations."
     extracted_info = openai_request(role_system, content)
     lines = extracted_info.split("\n")
-    extracted_reminders = "\n".join([line for line in lines if line.startswith(("Meeting:", "Reminder:", "Appointment Date:", "Appointment Time:", "Timezone:"))])
+    extracted_reminders = "\n".join(list(set([line for line in lines if line.startswith(("Meeting:", "Reminder:", "Appointment Date:", "Appointment Time:", "Timezone:"))])))
+    
+def load_latest_recording():
+    global recording
+    try:
+        data, _ = sf.read("latest_recording.wav", dtype=np.int16)
+        recording = [data]
+    except Exception as e:
+        print(f"Error loading latest recording: {e}")
+        return "No saved recording found."
         
 def translate():
     global translation
     detected_lang = detect_language(transcription)
+    
+    if detected_lang == "en":
+        print("Detected language is English. No translation needed.")
+        translation = "The provided text is already in English."
+        return
     
     if detected_lang not in supported_languages:
         print(f"Detected language {detected_lang} is not supported for translation.")
@@ -123,8 +145,11 @@ def translate():
 
 @app.route('/start_recording', methods=['POST'])
 def start_recording_route():
+    if os.path.exists("latest_recording.wav"):
+        return jsonify({"message": "A recording already exists. Use /load_latest_recording to load it or /stop_recording to overwrite it."}), 200
     start_recording()
     return jsonify({"message": "Recording started"}), 200
+
 
 @app.route('/stop_recording', methods=['POST'])
 def stop_recording_route():
@@ -160,6 +185,14 @@ def display_reminders_route():
 def translate_route():
     translate()
     return jsonify({"translation": translation}), 200
+
+@app.route('/load_latest_recording', methods=['GET'])
+def load_latest_recording_route():
+    response = load_latest_recording()
+    if response:
+        return jsonify({"error": response}), 400
+    return jsonify({"message": "Latest recording loaded"}), 200
+
 
 if __name__ == '__main__':
     app.run(debug=True)

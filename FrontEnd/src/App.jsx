@@ -1,15 +1,21 @@
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import ContactUs from './components/ContactUs';
-import DemoIndex from './components/DemoIndex';
-import DemoPost from './components/DemoPost';
+import Demo from './components/DemoIndex';
 import Home from './components/Home';
+import AboutUs from './components/AboutUs';
+import DemoPost from './components/DemoPost';
 
 function App() {
-
   return (
     <>
-      <DemoPost />
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/demo" element={<Demo />} />
+        </Routes>
+      </BrowserRouter>
     </>
   );
 }
 
-export default App
+export default App;

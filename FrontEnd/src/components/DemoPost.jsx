@@ -1,81 +1,105 @@
 import '../styles/demoPost.css';
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import axios from 'axios';
 
-
-function DemoPost(){
+function DemoPost() {
     const [transcript, setTranscript] = useState(null);
+    const [tempTranscript, setTempTranscript] = useState(null); // new state variable
+    const [summary, setSummary] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
-    const [message, setMessage] = useState(null);
-    const [name, setName] = useState("Customer");
+    const [showTranscript, setShowTranscript] = useState(false);
+    const [showSummary, setShowSummary] = useState(false);
 
     const fetchTranscript = async () => {
-        setError(null);
         setLoading(true);
-        try {
-            const response = await fetch('http://localhost:5000/display_transcript');
-            const data = await response.json();
-            setTranscript(data.transcript);
-        } catch (err) {
-            setError(err.message);
-        } finally {
-            setLoading(false);
-        }
+        await axios
+            .get('http://localhost:5000/transcribe')
+            .then((res) => {
+                console.log(res.data.transcript);
+                setTranscript(res.data.transcript);
+                setTempTranscript(res.data.transcript); 
+                setShowTranscript(true);
+                setShowSummary(false);
+            })
+            .catch((err) => {
+                console.log(err);
+            });
+        setLoading(false);
+        document.querySelector('.transcript').classList.add('show');
     };
     
-    
-    const displaySummary = async () => {
-        setError(null);
+    const fetchSummary = async () => {
         setLoading(true);
-        try {
-            const response = await fetch('http://localhost:5000/display_summary');
-            const data = await response.json();
-        } catch (err) {
-            setError(err.message);
-        } finally {
-            setLoading(false);
-        }
+        await axios
+            .get('http://localhost:5000/summarize')
+            .then((res) => {
+                setSummary(res.data.summary);
+                setShowSummary(true);
+                setShowTranscript(false);
+            })
+            .catch((err) => {
+                console.log(err);
+            });
+        setLoading(false);
+        document.querySelector('.transcript').classList.add('show');
     };
 
     const playAudio = async () => {
-        setError(null);
-        setLoading(true);
         try {
-            const response = await fetch('http://localhost:5000/play_audio');
+            const response = await axios.get('http://localhost:5000/play_audio');
+            const audio = new Audio(response.data.audio_url);
+            audio.play();
         } catch (err) {
             setError(err.message);
-        } finally {
-            setLoading(false);
         }
     };
 
     const displayReminders = async () => {
-        setError(null);
-        setLoading(true);
         try {
-            const response = await fetch('http://localhost:5000/display_reminders');
-            const data = await response.json();
-            // Do something with reminders data if needed
+            const response = await axios.get('http://localhost:5000/display_reminders');
+            window.open(response.data.reminders_url, '_blank');
         } catch (err) {
             setError(err.message);
-        } finally {
-            setLoading(false);
         }
     };
 
-    useEffect(() => {
-        fetchTranscript();
-    }, []);
-
     return (
-        <div className="App">
-            {loading && <div>Loading...</div>}
-            {error && <div>Error: {error}</div>}
-            {transcript && <div>{transcript}</div>}
-            <button onClick={displaySummary}>Display Summary</button>
-            <button onClick={playAudio}>Play Audio</button>
-            <button onClick={displayReminders}>Display Reminders</button>
-        </div>
+        <>
+            {showTranscript || showSummary? (
+                <div className="transcript">
+                    <textarea value={tempTranscript || 'No transcript available.'} readOnly /> {/* use tempTranscript */}
+                </div>
+            ) : (
+                <div className="header">
+                    <h1 className="header-title">Finished call</h1>
+                    <p className="header-description">Here are some options for what to do after the call.</p>
+                </div>
+            )}
+            {showSummary && (
+                <div className="summary transcript">
+                    <textarea value={summary || 'No summary available.'} readOnly />
+                </div>
+            )}
+            <div className="buttonList">
+                <button className="button" onClick={playAudio}>
+                    Playback
+                </button>
+                <button className="button" onClick={fetchTranscript}>
+                    Transcript
+                </button>
+                <button className="button" onClick={fetchSummary}>
+                    Summary
+                </button>
+                <button className="button" onClick={displayReminders}>
+                    Reminders
+                </button>
+                <button className="button">Translate</button>
+            </div>
+            {loading && <p>Loading transcript...</p>}
+            {error && <p>Error: {error}</p>}
+        </>
     );
 }
+
 export default DemoPost;

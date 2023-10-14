@@ -14,6 +14,9 @@ if not API_KEY:
 recording = None
 samplerate = 44100
 transcription = ""
+summary = ""
+translation = ""
+extracted_reminders = ""
 recording = []
 stream = None
 warnings.filterwarnings("ignore", category=UserWarning)
@@ -26,20 +29,35 @@ def callback(indata):
 
 def start_recording():
     global stream
-    recording.clear()
-    stream = sd.InputStream(samplerate=samplerate, channels=1, dtype=np.int16, callback=callback)
-    stream.start()
+    try:
+        recording.clear()
+        stream = sd.InputStream(samplerate=samplerate, channels=1, dtype=np.int16, callback=callback)
+        stream.start()
+    except Exception as e:
+        print(f"Error starting recording: {e}")
 
 def stop_recording():
     global stream, recording
-    stream.stop()
-    stream.close()
-    recording = np.concatenate(recording, axis=0)
-    np.save("recording.npy", recording)
+    try:
+        stream.stop()
+        stream.close()
+        recording = np.concatenate(recording, axis=0)
+        np.save("recording.npy", recording)
+    except Exception as e:
+        print(f"Error stopping recording: {e}")
 
 def playback():
     global recording
-    sd.play(recording, samplerate=samplerate)
+    try:
+        sd.play(recording, samplerate=samplerate)
+    except Exception as e:
+        print(f"Error during playback: {e}")
+
+def save_recording():
+    global recording
+    filename = "saved_recording.wav"
+    sf.write(filename, recording, samplerate)
+    print("Recording saved successfully!")
 
 def transcribe():
     global transcription, recording
@@ -49,6 +67,9 @@ def transcribe():
     result = model.transcribe(filename)
     transcription = result["text"]
     print(transcription)
+    save_option = input("Do you want to save the transcription? (yes/no): ")
+    if save_option.lower() == "yes":
+        save_to_file(transcription, "transcription")
 
 def request_to_openai(url, data):
     headers = {
@@ -57,14 +78,16 @@ def request_to_openai(url, data):
         'User-Agent': 'OpenAI Python Client'
     }
     data["model"] = "gpt-3.5-turbo"
-    response = requests.post(url, headers=headers, json=data)
-    if response.status_code != 200:
-        print(f"Error: {response.status_code} - {response.json()['error']['message']}")
+    try:
+        response = requests.post(url, headers=headers, json=data)
+        response.raise_for_status()  # This will raise an HTTPError if the HTTP request returned an unsuccessful status code
+        return response.json()['choices'][0]['message']['content']
+    except requests.RequestException as e:
+        print(f"Error: {e}")
         return None
-    return response.json()['choices'][0]['message']['content']
 
 def summarize():
-    global transcription
+    global transcription, summary
     if not transcription:
         print("Please transcribe the audio first.")
         return
@@ -84,6 +107,9 @@ def summarize():
     
     if summary:
         print("Summary:", summary)
+        save_option = input("Do you want to save the summary? (yes/no): ")
+        if save_option.lower() == "yes":
+            save_to_file(summary, "summary")
 
 def reminders():
     global transcription
@@ -106,13 +132,13 @@ def reminders():
     if extracted_info:
         lines = extracted_info.split("\n")
         formatted_info = [line for line in lines if line.startswith(("Meeting:", "Reminder:", "Schedule:"))]
-        if formatted_info:
-            print("\n".join(formatted_info))
+        extracted_reminders = "\n".join(formatted_info)
+        print(extracted_reminders)
     else:
         print("Failed to extract information from OpenAI API.")
         
 def translate():
-    global transcription
+    global transcription, translation
     if not transcription:
         print("Please transcribe the audio first.")
         return
@@ -131,8 +157,9 @@ def translate():
         translation = request_to_openai('https://api.openai.com/v1/chat/completions', data)
         if translation:
             print(translation)
-        else:
-            print("Failed to translate using OpenAI API.")
+            save_option = input("Do you want to save the translation? (yes/no): ")
+            if save_option.lower() == "yes":
+                save_to_file(translation, "translation")
     else:
         print(f"{language_var.get()} is not supported or not selected.")
 
@@ -145,7 +172,11 @@ def load_recording():
         print("Recording loaded.")
     else:
         print("No recording file found. Please record first.")
-
+        
+def save_to_file(content, file_type):
+    with open(f"{file_type}.txt", "w") as file:
+        file.write(content)
+    print(f"{file_type} saved successfully!")
 
 root = tk.Tk()
 root.title("Customer Service Helper")
@@ -168,8 +199,20 @@ summarize_btn.pack(pady=10)
 reminders_btn = tk.Button(root, text="Reminders", command=reminders)
 reminders_btn.pack(pady=10)
 
-load_btn = tk.Button(root, text="Load Recording", command=load_recording)
-load_btn.pack(pady=10)
+save_transcription_btn = tk.Button(root, text="Save Transcription", command=lambda: save_to_file(transcription, "transcription"))
+save_transcription_btn.pack(pady=10)
+
+save_summary_btn = tk.Button(root, text="Save Summary", command=lambda: save_to_file(summary, "summary"))
+save_summary_btn.pack(pady=10)
+
+save_translation_btn = tk.Button(root, text="Save Translation", command=lambda: save_to_file(translation, "translation"))
+save_translation_btn.pack(pady=10)
+
+save_reminders_btn = tk.Button(root, text="Save Reminders", command=lambda: save_to_file(extracted_reminders, "reminders"))
+save_reminders_btn.pack(pady=10)
+
+save_playback_btn = tk.Button(root, text="Save Playback", command=save_recording)
+save_playback_btn.pack(pady=10)
 
 language_var = tk.StringVar(root)
 language_var.set("Select Language")
@@ -179,5 +222,8 @@ lang_dropdown.pack(pady=10)
 
 translate_btn = tk.Button(root, text="Translate", command=translate)
 translate_btn.pack(pady=10)
+
+load_btn = tk.Button(root, text="Load Recording", command=load_recording)
+load_btn.pack(pady=10)
 
 root.mainloop()

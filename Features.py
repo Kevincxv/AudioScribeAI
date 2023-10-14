@@ -23,7 +23,7 @@ warnings.filterwarnings("ignore", category=UserWarning)
 
 supported_languages = {"French": "French:", "Spanish": "Spanish:", "German": "German:", "Italian": "Italian:", "Portuguese": "Portuguese:", "Dutch": "Dutch:", "Russian": "Russian:", "Japanese": "Japanese:", "Chinese": "Chinese:", "Korean": "Korean:", "Arabic": "Arabic:", "Hindi": "Hindi:", "Swedish": "Swedish:", "Danish": "Danish:", "Finnish": "Finnish:", "Norwegian": "Norwegian:", "Polish": "Polish:", "Turkish": "Turkish:", "Greek": "Greek:", "Hebrew": "Hebrew:"}
 
-def callback(indata):
+def callback(indata, outdata, frames, timeinfo):
     global recording
     recording.append(indata.copy())
 
@@ -67,9 +67,6 @@ def transcribe():
     result = model.transcribe(filename)
     transcription = result["text"]
     print(transcription)
-    save_option = input("Do you want to save the transcription? (yes/no): ")
-    if save_option.lower() == "yes":
-        save_to_file(transcription, "transcription")
 
 def request_to_openai(url, data):
     headers = {
@@ -107,9 +104,8 @@ def summarize():
     
     if summary:
         print("Summary:", summary)
-        save_option = input("Do you want to save the summary? (yes/no): ")
-        if save_option.lower() == "yes":
-            save_to_file(summary, "summary")
+    else:
+        print("There's no summary for the transcription.")
 
 def reminders():
     global transcription
@@ -133,7 +129,10 @@ def reminders():
         lines = extracted_info.split("\n")
         formatted_info = [line for line in lines if line.startswith(("Meeting:", "Reminder:", "Schedule:"))]
         extracted_reminders = "\n".join(formatted_info)
-        print(extracted_reminders)
+        if extracted_reminders:
+            print(extracted_reminders)
+        else:
+            print("There's no reminder in the transcription.")
     else:
         print("Failed to extract information from OpenAI API.")
         
@@ -157,9 +156,8 @@ def translate():
         translation = request_to_openai('https://api.openai.com/v1/chat/completions', data)
         if translation:
             print(translation)
-            save_option = input("Do you want to save the translation? (yes/no): ")
-            if save_option.lower() == "yes":
-                save_to_file(translation, "translation")
+        else:
+            print("There's no translation for the transcription.")
     else:
         print(f"{language_var.get()} is not supported or not selected.")
 

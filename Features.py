@@ -7,6 +7,44 @@ import whisper
 import warnings
 import os
 from langdetect import detect
+# from flask import Flask, jsonify, request
+# from flask_cors import CORS
+
+# app = Flask(__name__)
+# CORS(app)
+
+# @app.route('/start_recording', methods=['POST'])
+# def start_recording_route():
+#     start_recording()
+#     return jsonify({"message": "Recording started"}), 200
+
+# @app.route('/stop_recording', methods=['POST'])
+# def stop_recording_route():
+#     stop_recording()
+#     return jsonify({"message": "Recording stopped"}), 200
+
+# @app.route('/play_audio', methods=['GET'])
+# def play_audio_route():
+#     playback()
+#     return jsonify({"audio": "Audio is playing..."}), 200
+
+# @app.route('/display_transcript', methods=['GET'])
+# def display_transcript_route():
+#     transcribe()
+#     return jsonify({"transcript": transcription}), 200
+
+# @app.route('/display_summary', methods=['GET'])
+# def display_summary_route():
+#     summarize()
+#     return jsonify({"summary": summary}), 200
+
+# @app.route('/display_reminders', methods=['GET'])
+# def display_reminders_route():
+#     reminders()
+#     return jsonify({"reminders": extracted_reminders}), 200
+
+# if __name__ == "__main__":
+#     app.run(debug=True)
 
 API_KEY = os.environ.get('OPENAI_API_KEY')
 if not API_KEY:
@@ -78,7 +116,6 @@ def transcribe():
     result = model.transcribe(filename)
     raw_transcription = result["text"]
 
-    # Split transcription into sentences
     sentences = [s.strip() for s in raw_transcription.split('.') if s]
     
     labeled_transcription = []

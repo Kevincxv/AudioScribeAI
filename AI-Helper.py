@@ -48,18 +48,18 @@ def transcribe():
     transcription = result["text"]
     print(transcription)
 
-def request_to_openai(endpoint, data):
+def request_to_openai(url, data):
     headers = {
         'Authorization': f'Bearer {API_KEY}',
         'Content-Type': 'application/json',
         'User-Agent': 'OpenAI Python Client'
     }
-    try:
-        response = requests.post(endpoint, headers=headers, json=data)
-        response.raise_for_status()
-        return response.json()["choices"][0]["text"].strip()
-    except requests.RequestException as e:
-        print("API Error:", e)
+    data["model"] = "gpt-3.5-turbo"
+    response = requests.post(url, headers=headers, json=data)
+    if response.status_code != 200:
+        print(f"Error: {response.status_code} - {response.json()['error']['message']}")
+        return None
+    return response.json()['choices'][0]['message']['content']
 
 def summarize():
     global transcription
@@ -68,14 +68,20 @@ def summarize():
         return
 
     sanitized_transcription = transcription.replace("\n", " ").strip()[:1000]
+    content = f'Provide a bullet-point summary for the following customer service call: {sanitized_transcription}'
 
-    prompt = f"Summarize the following customer service call: {sanitized_transcription}"
-    data = {'prompt': prompt, 'max_tokens': 150}
-    summary = request_to_openai('https://api.openai.com/v1/engines/davinci/completions', data)
+    data = {
+        'messages': [
+            {"role": "system", "content": "You are a helpful assistant that provides summaries for customer service calls."},
+            {"role": "user", "content": content}
+        ],
+        'max_tokens': 150
+    }
+
+    summary = request_to_openai('https://api.openai.com/v1/chat/completions', data)
     
     if summary:
         print("Summary:", summary)
-
 
 def reminders():
     global transcription
@@ -83,12 +89,26 @@ def reminders():
         print("Please transcribe the audio first.")
         return
     
-    prompt = f'Extract reminders, meetings, and appointment dates from the following text: {transcription}'
-    data = {'prompt': prompt, 'max_tokens': 200}
-    extracted_info = request_to_openai('https://api.openai.com/v1/engines/davinci/completions', data)
+    content = f'Extract reminders, meetings, and appointment dates from the following text in the format of "Meeting: DAY TIME, Reminder: TIMEFRAME, Schedule: DATE": {transcription}'
+    
+    data = {
+        'messages': [
+            {"role": "system", "content": "You are a helpful assistant that extracts reminders, meetings, and appointments."},
+            {"role": "user", "content": content}
+        ],
+        'max_tokens': 200
+    }
+    
+    extracted_info = request_to_openai('https://api.openai.com/v1/chat/completions', data)
+    
     if extracted_info:
-        print("Extracted Information:", extracted_info)
-        
+        lines = extracted_info.split("\n")
+        formatted_info = [line for line in lines if line.startswith(("Meeting:", "Reminder:", "Schedule:"))]
+        if formatted_info:
+            print("\n".join(formatted_info))
+    else:
+        print("Failed to extract information from OpenAI API.")
+
 def load_recording():
     global recording
     filename = "recording.wav"

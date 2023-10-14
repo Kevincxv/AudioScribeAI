@@ -1,25 +1,21 @@
 import os
-import threading
 import warnings
-
 import numpy as np
 import requests
 import sounddevice as sd
 import soundfile as sf
-import tkinter as tk
 import whisper
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from langdetect import detect
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
 
-# API_KEY = os.environ.get('OPENAI_API_KEY')
-# if not API_KEY:
-#     raise ValueError("Please set the OPENAI_API_KEY environment variable.")
-
-API_KEY ='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'
+API_KEY = os.getenv('API_KEY')
 
 recording = []
 samplerate = 44100

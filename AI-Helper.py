@@ -18,6 +18,8 @@ recording = []
 stream = None
 warnings.filterwarnings("ignore", category=UserWarning)
 
+supported_languages = {"French": "French:", "Spanish": "Spanish:", "German": "German:", "Italian": "Italian:", "Portuguese": "Portuguese:", "Dutch": "Dutch:", "Russian": "Russian:", "Japanese": "Japanese:", "Chinese": "Chinese:", "Korean": "Korean:", "Arabic": "Arabic:", "Hindi": "Hindi:", "Swedish": "Swedish:", "Danish": "Danish:", "Finnish": "Finnish:", "Norwegian": "Norwegian:", "Polish": "Polish:", "Turkish": "Turkish:", "Greek": "Greek:", "Hebrew": "Hebrew:"}
+
 def callback(indata, frames, time, status):
     global recording
     recording.append(indata.copy())
@@ -108,6 +110,32 @@ def reminders():
             print("\n".join(formatted_info))
     else:
         print("Failed to extract information from OpenAI API.")
+        
+def translate():
+    global transcription
+    if not transcription:
+        print("Please transcribe the audio first.")
+        return
+
+    prompt_language = supported_languages.get(language_var.get())
+    
+    if prompt_language:
+        content = f'{prompt_language} {transcription}'
+        data = {
+            'messages': [
+                {"role": "system", "content": "You are a helpful assistant that translates text."},
+                {"role": "user", "content": content}
+            ],
+            'max_tokens': 500  
+        }
+        translation = request_to_openai('https://api.openai.com/v1/chat/completions', data)
+        if translation:
+            print(translation)
+        else:
+            print("Failed to translate using OpenAI API.")
+    else:
+        print(f"{language_var.get()} is not supported or not selected.")
+
 
 def load_recording():
     global recording
@@ -142,5 +170,14 @@ reminders_btn.pack(pady=10)
 
 load_btn = tk.Button(root, text="Load Recording", command=load_recording)
 load_btn.pack(pady=10)
+
+language_var = tk.StringVar(root)
+language_var.set("Select Language")
+
+lang_dropdown = tk.OptionMenu(root, language_var, *supported_languages.keys())
+lang_dropdown.pack(pady=10)
+
+translate_btn = tk.Button(root, text="Transcribe & Translate", command=translate)
+translate_btn.pack(pady=10)
 
 root.mainloop()

@@ -77,7 +77,7 @@ def summarize():
         print("Summary:", summary)
 
 
-def extract_reminders():
+def reminders():
     global transcription
     if not transcription:
         print("Please transcribe the audio first.")
@@ -117,7 +117,7 @@ transcribe_btn.pack(pady=10)
 summarize_btn = tk.Button(root, text="Summarize", command=summarize)
 summarize_btn.pack(pady=10)
 
-reminders_btn = tk.Button(root, text="Extract Reminders", command=extract_reminders)
+reminders_btn = tk.Button(root, text="Reminders", command=reminders)
 reminders_btn.pack(pady=10)
 
 load_btn = tk.Button(root, text="Load Recording", command=load_recording)

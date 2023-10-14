@@ -88,6 +88,15 @@ def extract_reminders():
     extracted_info = request_to_openai('https://api.openai.com/v1/engines/davinci/completions', data)
     if extracted_info:
         print("Extracted Information:", extracted_info)
+        
+def load_recording():
+    global recording
+    filename = "recording.wav"
+    if os.path.exists(filename):
+        recording, _ = sf.read(filename, dtype=np.int16)
+        print("Recording loaded.")
+    else:
+        print("No recording file found. Please record first.")
 
 
 root = tk.Tk()
@@ -110,5 +119,8 @@ summarize_btn.pack(pady=10)
 
 reminders_btn = tk.Button(root, text="Extract Reminders", command=extract_reminders)
 reminders_btn.pack(pady=10)
+
+load_btn = tk.Button(root, text="Load Recording", command=load_recording)
+load_btn.pack(pady=10)
 
 root.mainloop()

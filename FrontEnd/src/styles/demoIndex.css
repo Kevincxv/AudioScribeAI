@@ -1,0 +1,81 @@
+body {
+    background-color: #1a1a1a; /* Dark background */
+    color: #e0e0e0; /* Light grey text for contrast */
+    font-family: Arial, sans-serif;
+}
+
+.profile-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh; /* Full viewport height */
+}
+
+.profile-pic {
+    width: 350px;
+    height: 350px;
+    border-radius: 50%; /* Makes the image circular */
+    margin-bottom: 20px;
+    box-shadow: 0 0 15px #e0e0e0; /* Glowing effect */
+}
+.button-container{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    width: 100%;
+}
+.button-container button {
+    display: flex;
+    align-items: center;
+    gap: 5px; /* spacing between icon and text */
+    border-radius: 50%;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: center;
+    align-items: center;
+    
+}
+.editable-content {
+    border: 1px dashed gray; /* Optional: show a border to indicate editability */
+    padding: 10px;
+    outline: none;
+}
+
+.editable-content:focus {
+    outline: none;
+    border-color: blue; /* Highlight border color when focused */
+}
+
+.button-container img {
+    width: 100px; /* adjust as needed */
+    height: 100px; /* adjust as needed */
+}
+
+.answer, .decline{
+    padding: 10px 20px;
+    cursor: pointer;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    transition: box-shadow 0.3s; /* Transition for smooth effects */
+}
+
+.answer {
+    background-color: #4CAF50; /* Green */
+    color: white;
+}
+
+.answer:hover {
+    box-shadow: 0 0 10px #4CAF50; /* Green glow on hover */
+}
+
+.decline {
+    background-color: #f44336; /* Red */
+    color: white;
+}
+
+.decline:hover {
+    box-shadow: 0 0 10px #f44336; /* Red glow on hover */
+}
+

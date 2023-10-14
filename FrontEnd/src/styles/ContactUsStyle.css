@@ -1,0 +1,99 @@
+/* .contact-us {
+    background-color: #f0f0f0;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border: 1px solid #ccc;
+    margin-top: 20px;
+  }
+  
+  .contact-us h1 {
+    font-size: 36px;
+    margin-bottom: 10px;
+  }
+  
+  .contact-us form {
+    display: flex;
+    flex-direction: column;
+    max-width: 500px;
+  }
+  
+  .contact-us label {
+    font-size: 20px;
+    margin-bottom: 5px;
+  }
+  
+  .contact-us input,
+  .contact-us textarea {
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+  }
+  
+  .contact-us textarea {
+    height: 150px;
+  }
+  
+  .contact-us button {
+    background-color: #007bff;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  
+  .contact-us button:hover {
+    background-color: #0069d9;
+  } */
+
+
+
+  .contact-us-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh; /* Center vertically in the viewport */
+    margin-top: -10px;
+  }
+  
+  .box {
+    background-color: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    width: 50%;
+    max-width: 400px;
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+  }
+  
+  .box h3 {
+    font-size: 24px;
+    margin: 10px 0;
+  }
+  
+  .box input {
+    width: 100%; 
+    padding: 10px;
+    font-size: 16px;
+  }
+
+  .box a {
+    font-size: 18px;
+    text-decoration: none;
+    color: #007bff;
+    margin-top: 20px; /* Adjust the margin to control the space */
+    cursor: pointer;
+  }
+  
+  .box a:hover {
+    text-decoration: underline; /* Underline the link on hover */
+    color: #0056b3;
+  }

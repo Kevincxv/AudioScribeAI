@@ -13,16 +13,26 @@ import threading
 recording = False
 audio_path = "output.wav"
 
-# 1. Audio Conversation to Transcript
+pygame.mixer.init()
+
+BART_MODEL_NAME = "facebook/bart-large-cnn"
+bart_model = BartForConditionalGeneration.from_pretrained(BART_MODEL_NAME)
+bart_tokenizer = BartTokenizer.from_pretrained(BART_MODEL_NAME)
+
+nlp = spacy.load("en_core_web_sm")
+
 def transcribe_audio(audio_path, encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16, sample_rate=44100, language="en-US"):
     client = speech.SpeechClient()
     with open(audio_path, 'rb') as audio_file:
         content = audio_file.read()
+        
     audio = speech.RecognitionAudio(content=content)
     config = speech.RecognitionConfig(
         encoding=encoding,
         sample_rate_hertz=sample_rate,
         language_code=language,
+        use_enhanced=True,
+        model='phone_call'
     )
     response = client.recognize(config=config, audio=audio)
     transcript = ""
@@ -31,43 +41,47 @@ def transcribe_audio(audio_path, encoding=speech.RecognitionConfig.AudioEncoding
     return transcript
 
 
-# 2. Summarize the Transcript
 def summarize_text(text):
-    model_name = "facebook/bart-large-cnn"
-    model = BartForConditionalGeneration.from_pretrained(model_name)
-    tokenizer = BartTokenizer.from_pretrained(model_name)
-    inputs = tokenizer([text], max_length=1024, return_tensors="pt", truncation=True)
-    summary_ids = model.generate(inputs["input_ids"], num_beams=4, min_length=30, max_length=500, early_stopping=True)
-    summary = tokenizer.decode(summary_ids[0], skip_special_tokens=True)
+    inputs = bart_tokenizer([text], max_length=1024, return_tensors="pt", truncation=True)
+    summary_ids = bart_model.generate(inputs["input_ids"], num_beams=4, min_length=30, max_length=500, early_stopping=True)
+    summary = bart_tokenizer.decode(summary_ids[0], skip_special_tokens=True)
     return summary
 
-# 3. Extract Reminders or Appointments
 def extract_appointments(text):
-    nlp = spacy.load("en_core_web_sm")
     doc = nlp(text)
-    
     reminders = []
-    for ent in doc.ents:
-        if ent.label_ == "DATE":
-            prev_token = ent.start - 1
-            next_token = ent.end
-            if prev_token >= 0 and doc[prev_token].lower_ in ["appointment", "meeting", "schedule"]:
-                label = "Appointment" if doc[prev_token].lower_ == "appointment" else "Meeting"
-                time_str = ""
-                if next_token < len(doc) and doc[next_token].lower_ == "at":
-                    time_ent = [e for e in doc.ents if e.label_ == "TIME" and e.start > next_token]
-                    if time_ent:
-                        time_str = " at " + time_ent[0].text + " EST"
-                reminders.append(f"{label}: {ent.text}{time_str}")
-                
+    
+    # Define patterns for matching
+    appointment_pattern = [{"LOWER": {"IN": ["appointment", "schedule", "meeting"]}},
+                           {"IS_PUNCT": True, "OP": "?"},
+                           {"ENT_TYPE": "DATE", "OP": "+"},
+                           {"LOWER": "at", "OP": "?"},
+                           {"ENT_TYPE": "TIME", "OP": "?"}]
+    
+    matcher = Matcher(nlp.vocab)
+    matcher.add("APPOINTMENT_PATTERN", [appointment_pattern])
+    
+    matches = matcher(doc)
+    
+    for match_id, start, end in matches:
+        span = doc[start:end]
+        if "appointment" in span.text.lower():
+            label = "Appointment"
+        else:
+            label = "Meeting"
+        
+        date_entity = [ent for ent in span.ents if ent.label_ == "DATE"]
+        time_entity = [ent for ent in span.ents if ent.label_ == "TIME"]
+        
+        if time_entity:
+            reminders.append(f"{label}: {date_entity[0].text} at {time_entity[0].text} EST")
+        else:
+            reminders.append(f"{label}: {date_entity[0].text}")
+    
     return reminders
 
-# 4. Multilingual Audio to English Transcript
 def transcribe_and_translate(audio_path, target_language="en"):
-    # Transcribe the audio
     transcript = transcribe_audio(audio_path)
-    
-    # Translate the transcript to the selected language
     translate_client = translate.Client()
     result = translate_client.translate(transcript, target_language=target_language)
     return result["translatedText"]
@@ -103,6 +117,8 @@ def stop_recording():
 
 def play_audio():
     pygame.mixer.init()
+    if pygame.mixer.music.get_busy():
+        pygame.mixer.music.stop()
     pygame.mixer.music.load(audio_path)
     pygame.mixer.music.play()
 
@@ -113,9 +129,7 @@ def display_transcript():
 def display_summary():
     transcript = transcribe_audio(audio_path)
     summary = summarize_text(transcript)
-    bullet_points = summary.split('. ')
-    formatted_summary = '\n'.join(['• ' + point for point in bullet_points if point])
-    messagebox.showinfo("Summary", formatted_summary)
+    messagebox.showinfo("Summary", summary)
 
 def display_reminders():
     transcript = transcribe_audio(audio_path)
@@ -126,7 +140,6 @@ def display_translation():
     translated_text = transcribe_and_translate(audio_path)
     messagebox.showinfo("Translated Transcript", translated_text)
 
-# Main function to demonstrate the functionalities
 def main():
     root = tk.Tk()
     root.title("Audio Processing App")
@@ -139,7 +152,7 @@ def main():
 
     play_button = tk.Button(root, text="Play Audio", command=play_audio)
     play_button.pack()
-    
+
     transcript_button = tk.Button(root, text="View Transcript", command=display_transcript)
     transcript_button.pack()
 
@@ -148,8 +161,14 @@ def main():
 
     reminders_button = tk.Button(root, text="View Reminders", command=display_reminders)
     reminders_button.pack()
-    
-    translate_button = tk.Button(root, text="Translate Transcript", command=lambda: display_translation(selected_language.get()))
+
+    languages = [("English", "en"), ("Spanish", "es"), ("French", "fr")]
+    selected_language = tk.StringVar(root)
+    selected_language.set("en")
+    lang_dropdown = tk.OptionMenu(root, selected_language, *[lang[0] for lang in languages])
+    lang_dropdown.pack()
+
+    translate_button = tk.Button(root, text="Translate Transcript", command=display_translation)
     translate_button.pack()
 
     root.mainloop()

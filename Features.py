@@ -177,7 +177,7 @@ language_var.set("Select Language")
 lang_dropdown = tk.OptionMenu(root, language_var, *supported_languages.keys())
 lang_dropdown.pack(pady=10)
 
-translate_btn = tk.Button(root, text="Transcribe & Translate", command=translate)
+translate_btn = tk.Button(root, text="Translate", command=translate)
 translate_btn.pack(pady=10)
 
 root.mainloop()

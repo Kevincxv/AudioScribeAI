@@ -9,8 +9,13 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 from langdetect import detect
 from dotenv import load_dotenv
+import nltk
+from nltk.tokenize import sent_tokenize
+
 
 load_dotenv()
+nltk.download('punkt')
+warnings.filterwarnings("ignore", category=UserWarning)
 
 app = Flask(__name__)
 CORS(app)
@@ -25,8 +30,6 @@ transcription = ""
 summary = ""
 translation = ""
 extracted_reminders = ""
-
-warnings.filterwarnings("ignore", category=UserWarning)
 
 supported_languages = {"French": "French:", "Spanish": "Spanish:", "German": "German:", "Italian": "Italian:", "Portuguese": "Portuguese:", "Dutch": "Dutch:", "Russian": "Russian:", "Japanese": "Japanese:", "Chinese": "Chinese:", "Korean": "Korean:", "Arabic": "Arabic:", "Hindi": "Hindi:", "Swedish": "Swedish:", "Danish": "Danish:", "Finnish": "Finnish:", "Norwegian": "Norwegian:", "Polish": "Polish:", "Turkish": "Turkish:", "Greek": "Greek:", "Hebrew": "Hebrew:"}
 
@@ -91,13 +94,9 @@ def transcribe():
     result = model.transcribe(filename)
     raw_transcription = result["text"]
     
-    sentences = [s.strip() for s in raw_transcription.split('.') if s]
+    sentences = sent_tokenize(raw_transcription)
     
-    start_index = sentences[0].find("Agent: ")
-    if start_index == -1:
-        labeled_transcription = [f"{'Customer' if i % 2 == 0 else 'Agent'}: {sentence}." for i, sentence in enumerate(sentences)]
-    else:
-        labeled_transcription = [f"{'Agent' if i % 2 == 0 else 'Customer'}: {sentence}." for i, sentence in enumerate(sentences)]
+    labeled_transcription = [f"{'Agent' if i % 2 == 0 else 'Customer'}: {sentence}" for i, sentence in enumerate(sentences)]
     
     transcription = "\n".join(labeled_transcription)
 
@@ -127,21 +126,35 @@ def load_latest_recording():
         print(f"Error loading latest recording: {e}")
         return "No saved recording found."
         
-def translate():
+def translate(target_language):
     global translation
     detected_lang = detect_language(transcription)
     
-    if detected_lang == "en":
-        print("Detected language is English. No translation needed.")
+    if detected_lang == "en" and target_language == "English":
+        print("Source and target language is English. No translation needed.")
         translation = "The provided text is already in English."
         return
     
-    if detected_lang not in supported_languages:
-        print(f"Detected language {detected_lang} is not supported for translation.")
+    if target_language not in supported_languages:
+        print(f"Target language {target_language} is not supported for translation.")
+        translation = f"Translation to {target_language} is not supported."
         return
-    content = f"Translate the following text from {detected_lang} to English: {transcription}"
+    
+    if detected_lang == "en":
+        content = f"Translate the following text from English to {target_language}: {transcription}"
+    else:
+        content = f"Translate the following text from {detected_lang} to English: {transcription}"
+        transcription_in_english = openai_request("You are a helpful assistant that translates text.", content)
+        content = f"Translate the following text from English to {target_language}: {transcription_in_english}"
+    
     role_system = "You are a helpful assistant that translates text."
-    translation = openai_request(role_system, content)
+    raw_translation = openai_request(role_system, content)
+    
+    sentences = sent_tokenize(raw_translation)
+    labeled_translation = [f"{'Agent' if i % 2 == 0 else 'Customer'}: {sentence}" for i, sentence in enumerate(sentences)]
+    translation = "\n".join(labeled_translation)
+
+
 
 @app.route('/start_recording', methods=['POST'])
 def start_recording_route():
@@ -169,22 +182,36 @@ def display_transcript_route():
     response = transcribe()
     if response:
         return jsonify({"error": response}), 400
-    return jsonify({"transcript": transcription}), 200
+    formatted_transcription = {
+        "title": "Transcription",
+        "content": transcription.split('\n')
+    }
+    return jsonify(formatted_transcription), 200
 
 @app.route('/display_summary', methods=['GET'])
 def display_summary_route():
     summarize()
-    return jsonify({"summary": summary}), 200
+    formatted_summary = {
+        "title": "Summary",
+        "content": summary.split('\n')
+    }
+    return jsonify(formatted_summary), 200
 
 @app.route('/display_reminders', methods=['GET'])
 def display_reminders_route():
     reminders()
     return jsonify({"reminders": lines}), 200
 
-@app.route('/translate', methods=['GET'])
-def translate_route():
-    translate()
-    return jsonify({"translation": translation}), 200
+@app.route('/translate/<target_language>', methods=['GET'])
+def translate_route(target_language):
+    translate(target_language)
+    formatted_translation = {
+        "title": "Translation",
+        "content": translation.split('\n')
+    }
+    return jsonify(formatted_translation), 200
+
+
 
 @app.route('/load_latest_recording', methods=['GET'])
 def load_latest_recording_route():

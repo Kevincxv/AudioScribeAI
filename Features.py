@@ -6,7 +6,6 @@ import soundfile as sf
 import whisper
 import warnings
 import os
-from langdetect import detect
 
 API_KEY = os.environ.get('OPENAI_API_KEY')
 if not API_KEY:
@@ -23,14 +22,6 @@ stream = None
 warnings.filterwarnings("ignore", category=UserWarning)
 
 supported_languages = {"French": "French:", "Spanish": "Spanish:", "German": "German:", "Italian": "Italian:", "Portuguese": "Portuguese:", "Dutch": "Dutch:", "Russian": "Russian:", "Japanese": "Japanese:", "Chinese": "Chinese:", "Korean": "Korean:", "Arabic": "Arabic:", "Hindi": "Hindi:", "Swedish": "Swedish:", "Danish": "Danish:", "Finnish": "Finnish:", "Norwegian": "Norwegian:", "Polish": "Polish:", "Turkish": "Turkish:", "Greek": "Greek:", "Hebrew": "Hebrew:"}
-
-def detect_language(text):
-    try:
-        detected_language = detect(text)
-        return detected_language
-    except:
-        print("Error detecting language. Defaulting to English.")
-        return "en"
 
 def callback(indata, outdata, frames, timeinfo):
     global recording
@@ -57,12 +48,10 @@ def stop_recording():
 
 def playback():
     global recording
-    adjusted_samplerate = samplerate * playback_speed.get()
     try:
-        sd.play(recording, samplerate=adjusted_samplerate)
+        sd.play(recording, samplerate=samplerate)
     except Exception as e:
         print(f"Error during playback: {e}")
-
 
 def save_recording():
     global recording
@@ -152,17 +141,7 @@ def translate():
     if not transcription:
         print("Please transcribe the audio first.")
         return
-    
-    detected_language = detect_language(transcription)
-    
-    language_map = {"fr": "French", "es": "Spanish", "de": "German", "it": "Italian", "pt": "Portuguese", "nl": "Dutch", "ru": "Russian", "ja": "Japanese", "zh-cn": "Chinese", "ko": "Korean", "ar": "Arabic", "hi": "Hindi", "sv": "Swedish", "da": "Danish", "fi": "Finnish", "no": "Norwegian", "pl": "Polish", "tr": "Turkish", "el": "Greek", "he": "Hebrew", "en": "English"}
 
-    if detected_language in language_map:
-        language_var.set(language_map[detected_language])
-    else:
-        print(f"Detected language ({detected_language}) is not supported. Please select a translation target manually.")
-        return
-    
     prompt_language = supported_languages.get(language_var.get())
     
     if prompt_language:
@@ -208,11 +187,6 @@ stop_btn.pack(pady=10)
 
 playback_btn = tk.Button(root, text="Playback", command=playback)
 playback_btn.pack(pady=10)
-
-playback_speed = tk.DoubleVar(root)
-playback_speed.set(1.0)
-playback_scale = tk.Scale(root, from_=0.5, to=2.0, resolution=0.1, orient=tk.HORIZONTAL, label="Playback Speed", variable=playback_speed)
-playback_scale.pack(pady=10)
 
 transcribe_btn = tk.Button(root, text="Transcribe", command=transcribe)
 transcribe_btn.pack(pady=10)

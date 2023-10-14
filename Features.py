@@ -73,10 +73,14 @@ def start_recording():
 
 def stop_recording():
     global stream
-    stream.stop()
-    stream.close()
-    filename = "latest_recording.wav"
-    sf.write(filename, np.concatenate(recording, axis=0), samplerate)
+    if stream is not None:
+        stream.stop()
+        stream.close()
+        filename = "latest_recording.wav"
+        sf.write(filename, np.concatenate(recording, axis=0), samplerate)
+    else:
+        print("No active recording stream found.")
+
 
 def playback():
     if not recording:
@@ -115,7 +119,20 @@ def reminders():
     role_system = "You are a helpful assistant that extracts and formats information about reminders, meetings, and appointments from conversations."
     extracted_info = openai_request(role_system, content)
     lines = extracted_info.split("\n")
-    extracted_reminders = "\n".join(list(set([line for line in lines if line.startswith(("Meeting:", "Reminder:", "Appointment Date:", "Appointment Time:", "Timezone:"))])))
+    
+    reminders_output = []
+    for line in lines:
+        if "Team meeting" in line:
+            reminders_output.append(f"Meeting: {line.split('on')[1].strip()}")
+        elif "Appointment" in line:
+            reminders_output.append(f"Schedule: {line.split('at')[1].strip()}")
+        elif "Reminder" in line:
+            reminders_output.append(f"Reminder: {line.split('to')[1].strip()}")
+    
+    extracted_reminders = "\n".join(reminders_output)
+
+
+
     
 def load_latest_recording():
     global recording
@@ -156,12 +173,18 @@ def translate(target_language):
 
 
 
+# @app.route('/start_recording', methods=['POST'])
+# def start_recording_route():
+#     if os.path.exists("latest_recording.wav"):
+#         return jsonify({"message": "A recording already exists. Use /load_latest_recording to load it or /stop_recording to overwrite it."}), 200
+#     start_recording()
+#     return jsonify({"message": "Recording started"}), 200
+
 @app.route('/start_recording', methods=['POST'])
 def start_recording_route():
-    if os.path.exists("latest_recording.wav"):
-        return jsonify({"message": "A recording already exists. Use /load_latest_recording to load it or /stop_recording to overwrite it."}), 200
     start_recording()
     return jsonify({"message": "Recording started"}), 200
+
 
 
 @app.route('/stop_recording', methods=['POST'])

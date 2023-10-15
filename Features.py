@@ -226,8 +226,6 @@ def translate_route(target_language):
     }
     return jsonify(formatted_translation), 200
 
-
-
 @app.route('/load_latest_recording', methods=['GET'])
 def load_latest_recording_route():
     response = load_latest_recording()

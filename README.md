@@ -20,44 +20,44 @@
 
 1. **Clone the repository**:
 
-   \`\`\`bash
+   `bash
    git clone https://github.com/YOUR_USERNAME/YOUR_REPO_NAME.git
    cd YOUR_REPO_NAME
-   \`\`\`
+   `
 
 2. **Set up a virtual environment** (optional but recommended):
 
-   \`\`\`bash
+   `bash
    python -m venv myenv
-   \`\`\`
+   `
 
    Activate the virtual environment:
 
    - On macOS and Linux:
 
-     \`\`\`bash
+     `bash
      source myenv/bin/activate
-     \`\`\`
+     `
 
    - On Windows:
 
-     \`\`\`bash
+     `bash
      myenv\Scripts\activate
-     \`\`\`
+     `
 
 3. **Install the required packages**:
 
-   \`\`\`bash
+   `bash
    pip install -r requirements.txt
-   \`\`\`
+   `
 
 4. **Environment Variables**:
 
    This project uses environment variables for configuration. Make sure to set up the \`.env\` file in the root directory with your variables. An example \`.env\` could be:
 
-   \`\`\`
+   `
    API_KEY=YOUR_OPENAI_API_KEY
-   \`\`\`
+   `
 
    Replace \`YOUR_OPENAI_API_KEY\` with your actual API key.
 
@@ -65,9 +65,9 @@
 
 With the virtual environment activated and dependencies installed:
 
-\`\`\`bash
+`bash
 python YOUR_MAIN_SCRIPT_NAME.py
-\`\`\`
+`
 
 This will start the Flask server, and the API will be accessible at \`http://localhost:5000\`.
 

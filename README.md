@@ -85,12 +85,3 @@ Here are some of the main endpoints:
 - **Load Latest Recording**: \`GET /load_latest_recording\`
 
 Refer to the source code or generated API documentation (if available) for detailed endpoint specifications.
-
-## Contributing
-
-Contributions are welcome! Please read our [contributing guidelines](CONTRIBUTING.md) (if available) before submitting a pull request.
-
-## License
-
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
-EOL
